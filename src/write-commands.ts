@@ -85,14 +85,15 @@ export function registerWriteCommands(program: Command): void {
 
   program
     .command('add')
-    .description('Declare an actor, external system, draft, flow, relation, or group')
-    .argument('<thing>', 'actor, external, draft, flow, relation, or group')
+    .description('Declare an actor, external system, existing container, draft, flow, relation, or group')
+    .argument('<thing>', 'actor, external, container, draft, flow, relation, or group')
     .argument('<name>', 'name, or the source file or concept ID of a relation')
     .argument('[ids...]', 'target file or concept ID of a relation, or the member IDs of a group')
     .option('--overview <markdown>', 'full Markdown explanation, or the outcome of a draft')
     .option('--steps <markdown>', 'flow Steps table: From | To | Action, with Markdown endpoint links')
     .option('--description <text>', 'optional short summary, or how the source uses the target')
-    .option('--technology <text>', 'technology of an external, or the interaction mechanism of a relation')
+    .option('--technology <text>', 'technology of an external or container, or the interaction mechanism of a relation')
+    .option('--parent <id>', 'internal system containing an existing container')
     .addHelpText('after', '\nAgent guides: groma agent-instructions')
     .action(async (thing: string, name: string, ids: string[], options) => {
       try {
@@ -100,6 +101,7 @@ export function registerWriteCommands(program: Command): void {
           thing,
           name,
           ...addedIds(thing, ids),
+          parent: options.parent,
           overview: options.overview,
           steps: options.steps,
           description: options.description,
@@ -140,7 +142,7 @@ export function registerWriteCommands(program: Command): void {
     .option('--draft <draft-id>', 'tag this element with the draft that touches it')
     .option('--group <name>', 'assign this component to a sibling group')
     .option('--ungroup', 'remove this component from its group')
-    .option('--parent <id>', 'move an empty scanned component to this container, or a container to this system')
+    .option('--parent <id>', 'complete unknown component placement, move an empty component, or move a container to this system')
     .option('--combine <ids...>', 'combine empty sibling systems, containers or components into this one; their containers, components or files move to it')
     .option('--detach <files...>', 'detach these source files from the component')
     .option('--id <new-id>', 'rename this element; its document and the documents under it move with it')

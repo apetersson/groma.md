@@ -185,8 +185,13 @@ A group is a narrative overlay on one hierarchy level. It never becomes a
 parent and owns no relationships. Scanners never derive groups. `groma edit
 --group` and `--ungroup` are the supported writers. `groma edit --combine`
 folds unique Code references from empty scan records into one component, and
-`groma edit --parent` moves an empty scanned component without changing its
-identity. Scanning can also complete a component's unidentified placement: positive
+`groma add container --parent <system>` declares a known existing application or
+data store with `status: stable`, ordinary meaning and no required scanner Code.
+It uses the same container record as inferred architecture; proposed software
+still uses `groma draft`. `groma edit --parent` completes a component’s unknown
+placement into a container of its current system without changing identity,
+meaning, groups, Code, relationships or flows; incoming/outgoing links are rebased.
+Other component moves retain the empty-meaning restriction. Scanning can also complete a component's unidentified placement: positive
 execution evidence can move it from its system into an application container.
 This preserves its ID, source ownership and authored meaning, and rebases incoming
 and outgoing Markdown links. An existing container assignment is never replaced.

@@ -29,6 +29,9 @@ export function createAuthoring(host: HTMLElement, map: IsoMap, data: WebDataSou
   function paneWrites(selectedId: string, selectedIds: readonly string[]): PaneWrites {
     if (!deps.live()) return {}
     const selection = selectionWrites(selectedIds)
+    const world = deps.world()
+    const selected = world.elements.find(element => element.id === selectedId)
+    const unplaced = world.elements.find(element => element.id === selected?.parent)?.kind === 'system'
     return {
       onRead: deps.repaint,
       ...(selection === undefined ? {} : { selection }),
@@ -36,7 +39,8 @@ export function createAuthoring(host: HTMLElement, map: IsoMap, data: WebDataSou
       ...(accept === undefined ? {} : { onAccept: () => accept({ id: selectedId }) }),
       ...(edit === undefined ? {} : {
         onEdit: (input, original) => edit({ id: selectedId, ...input, original }),
-        parents: deps.world().elements.filter(element => element.kind === 'container')
+        parents: world.elements.filter(element => element.kind === 'container'
+          && (!unplaced || element.parent === selected?.parent))
           .map(element => ({ id: element.id, title: element.title }))
           .sort((left, right) => left.title.localeCompare(right.title) || left.id.localeCompare(right.id)),
       }),
