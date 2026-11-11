@@ -125,6 +125,7 @@ The architecture lives in a `groma/` folder as an [Open Knowledge Format 0.2](ht
 | [Ruby / Rails](docs/scanners/ruby/index.md) | 🧪 Experimental |
 | [Scala 3](docs/scanners/scala/index.md) | 🧪 Experimental |
 | [Dart (Flutter and Serverpod source)](docs/scanners/dart/index.md) | 🧪 Experimental |
+| [Solidity](docs/scanners/solidity/index.md) | 🧪 Experimental |
 | [R](docs/scanners/r/index.md) | 🧪 Experimental |
 | [Ada](docs/scanners/ada/index.md) | 🧪 Experimental |
 | [Mojo](docs/scanners/mojo/index.md) | 🧪 Experimental |

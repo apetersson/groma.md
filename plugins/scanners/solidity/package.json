@@ -1,0 +1,51 @@
+{
+  "name": "@groma/scanner-solidity",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "description": "Experimental Solidity source inventory and declaration outlines without solc or project builds.",
+  "groma": {
+    "scanner": {
+      "id": "solidity",
+      "entry": "./src/index.ts",
+      "include": [
+        "**/*.sol"
+      ],
+      "exclude": [
+        "test/",
+        "tests/",
+        "script/",
+        "lib/",
+        "node_modules/",
+        "out/",
+        "cache/",
+        "artifacts/",
+        "typechain-types/"
+      ],
+      "discovery": {
+        "technologies": [
+          "solidity"
+        ],
+        "rules": [
+          {
+            "type": "file",
+            "files": [
+              "**/*.sol"
+            ],
+            "technology": "solidity",
+            "kind": "language",
+            "declaration": "Solidity source; syntax analysis without compiling or executing contracts"
+          }
+        ],
+        "compatibility": {
+          "groma": ">=0.6.6"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@groma/scanner": "workspace:*",
+    "@solidity-parser/parser": "0.20.2"
+  }
+}
