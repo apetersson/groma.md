@@ -83,7 +83,8 @@ export function annotateArchitecture(
     code: element.code.map(reference => ({ ...reference, ...(counts.get(reference.file) ?? { dependencies: 0, dependents: 0 }) })),
     // The web pane offers a new parent only for a component the write would move.
     movable: element.kind === 'component'
-      && moveBlocker(element, documents.get(element.sourceFilename)!.body, model.relationships, flows) === undefined,
+      && (byId.get(element.parentId ?? '')?.kind === 'system'
+        || moveBlocker(element, documents.get(element.sourceFilename)!.body, model.relationships, flows) === undefined),
     origin: originOf(element.status),
     ...(element.draft === undefined ? {} : { draft: element.draft }),
   }))

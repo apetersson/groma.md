@@ -261,7 +261,9 @@ function movedTarget(
   if (parent.external) throw new Error(`"${parent.id}" is an external system and stores nothing`)
   const flows = resolveFlows(context.records.flows, context.model)
   const blocker = moveBlocker(target, parseFrontmatter(source).content, context.model.relationships, flows)
-  if (blocker !== undefined) throw new Error(blocker)
+  const completesPlacement = target.kind === 'component' && target.parentId === parent.parentId
+    && context.byId.get(target.parentId ?? '')?.kind === 'system'
+  if (!completesPlacement && blocker !== undefined) throw new Error(blocker)
   return {
     source: withGromaField(source, 'parent', parent.id),
     destination: architectureElementPath({
@@ -378,8 +380,11 @@ export async function curateElement(
     ...combined.rewrites,
     ...await movedDescendants(context, target, renamed.destination, renamed.id),
   ]
-  // Only a rename repoints links; requireLoadableResult refuses a move or combine that would break one.
-  const writes: DocumentWrite[] = input.newId === undefined
+  // Completing unknown placement preserves incoming links and flows just as automatic placement does.
+  const completesPlacement = input.parent !== undefined && target.kind === 'component'
+    && target.parentId === byId.get(input.parent)?.parentId
+    && byId.get(target.parentId ?? '')?.kind === 'system'
+  const writes: DocumentWrite[] = input.newId === undefined && !completesPlacement
     ? rewrites.map(rewrite => ({ ...rewrite, source: withMovedLinks(rewrite.source,
       rewrite.sourceFilename, new Map(), rewrite.destinationFilename) }))
     : await linkWrites(context, rewrites)

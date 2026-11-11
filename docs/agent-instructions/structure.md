@@ -1,16 +1,18 @@
 # Curating structure
 
 Structure decides which elements exist, where each belongs, and which source
-files each component owns. Combines and component moves require empty meaning;
-moving a container preserves its meaning and its components.
+files each component owns. Completing unidentified placement preserves authored
+meaning, links and flows. Other component moves and combines retain their existing
+restrictions; moving a container preserves its meaning and its components.
 
 The first scan with source files creates one project-named system when none is
 declared. Scans preserve existing systems and containers; source groups cannot
 create additional systems or application boundaries. A component with a known
 system but no identifiable container appears in an Unidentified container group.
 Hand-proposed software stays a ghost draft until a scan matches it
-and it is accepted. Actors and external systems are stable declarations of what
-the scanner cannot see.
+and it is accepted. Declare an already existing runtime with `groma add container`
+when source inspection establishes its boundary but the scanner cannot. Actors and
+external systems are stable declarations of what the scanner cannot see.
 
 ## Order of work
 
@@ -37,6 +39,7 @@ the scanner cannot see.
 | `groma add group <name> <component...>` | sibling component IDs |
 | `groma edit group <address> --title <text>` | a group address |
 | `groma remove group <address> [component...]` | a group address, and the IDs of the members that leave; without members the group dissolves |
+| `groma add container <name> --parent <system> --overview <markdown>` | an existing application or data-store boundary; optional `--technology` |
 | `groma add actor <name> --overview <markdown>` | the name of a new person |
 | `groma add external <name> --overview <markdown>` | the name of a new outside system; `--technology` is optional |
 | `groma draft <system\|container\|component> <name> --overview <markdown>` | a new name; containers and components also require `--parent <id>`, which a system refuses |
@@ -76,6 +79,19 @@ a leading `/` matches only at the root. Excluded files do not become new
 components. Components already stored for newly excluded files keep their Code
 references; report them to the human.
 
+## Declaring an existing runtime
+
+```sh
+groma add container 'Collection runtime' --parent shop \
+  --technology 'Ethereum EVM' --overview 'Runs the collection against one authoritative ledger.'
+groma edit ledger --parent collection-runtime
+```
+
+Use this only for an application or data store supported by source or confirmed
+context, not a folder or an import. The container is stable even without Code;
+its components retain their source ownership. `groma draft container` continues to
+mean proposed software. Later scans preserve these authored boundaries.
+
 ## Container combines
 
 Suppose a scan placed parts of one local command-line application in two
@@ -100,10 +116,12 @@ Combined records must have the same kind and parent. Absorbed records cannot
 have body content, concept-addressed relationships, a group, or technology.
 The children a combine absorbs directly cannot have body content either, so a
 system combine refuses a described container while a described component two
-levels down relocates with it. A component move requires an empty body; a
-container move preserves its body and children. No record anywhere under a moved or absorbed record
-may hold a concept-addressed relationship, because its document changes path and
-these operations do not repoint links; a rename does.
+levels down relocates with it. A component directly under its system can move into a container of that same
+system with its descriptions, Code, groups, incoming/outgoing links and flows intact.
+This completes missing placement without claiming a scan match. Other component
+moves require an empty body; a container move preserves its body and children. Except when completing missing placement, no record anywhere under a moved or
+absorbed record may hold a concept-addressed relationship: those operations do not
+repoint incoming links. Renames and placement completion do repoint them.
 File connections follow their current owners and do not block these operations.
 The survivor may already have authored meaning.
 

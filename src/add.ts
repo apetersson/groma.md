@@ -8,6 +8,7 @@ import {
   writeDocument,
 } from './markdown-emitter.ts'
 import { addGroup } from './group.ts'
+import type { ArchitectureElement } from './types.ts'
 import type { StructuralResult } from './curate.ts'
 import { requireText } from './naming.ts'
 import { addRelation } from './relation.ts'
@@ -25,14 +26,15 @@ export interface AddInput {
   description?: string
   technology?: string
   steps?: string
+  /** Internal system containing a declared existing runtime. */
+  parent?: string
 }
 
-type DeclaredThing = 'actor' | 'external' | 'draft'
+type DeclaredThing = 'actor' | 'external' | 'draft' | 'container'
 
 /** Proposed architecture uses the draft command and its required parent. */
 const draftKinds: Record<string, string> = {
   system: '',
-  container: ' --parent <system-id>',
   component: ' --parent <container-id>',
 }
 
@@ -43,15 +45,16 @@ function requireThing(thing: string, name: string): DeclaredThing {
       `To draft a ${thing}, run: groma draft ${thing} "${name}"${parentHint}`,
     )
   }
-  if (thing === 'actor' || thing === 'external' || thing === 'draft') return thing
-  throw new Error('thing must be actor, external or draft')
+  if (thing === 'actor' || thing === 'external' || thing === 'draft' || thing === 'container') return thing
+  throw new Error('thing must be actor, external, container or draft')
 }
 
 function renderThing(thing: DeclaredThing, id: string, input: AddInput, overview: string): string {
   if (thing === 'draft') return renderDraftDocument({ id, title: input.name, outcome: overview })
   return renderArchitectureDocument({
     id,
-    kind: thing === 'actor' ? 'actor' : 'system',
+    kind: thing === 'actor' ? 'actor' : thing === 'container' ? 'container' : 'system',
+    parent: input.parent,
     technology: input.technology,
     name: input.name,
     description: input.description,
@@ -60,7 +63,19 @@ function renderThing(thing: DeclaredThing, id: string, input: AddInput, overview
   })
 }
 
-/** Writes what no scan can see: a person, an outside system, or the record of a draft. */
+/** Existing runtime boundaries are declared under their internal software system. */
+function declaredParent(thing: DeclaredThing, input: AddInput, elements: ArchitectureElement[]): ArchitectureElement | undefined {
+  if (thing !== 'container') {
+    if (input.parent !== undefined) throw new Error('--parent is only valid for a container')
+    return undefined
+  }
+  if (input.parent === undefined) throw new Error('--parent is required for a container')
+  const parent = elements.find(element => element.id === input.parent)
+  if (parent?.kind !== 'system' || parent.external) throw new Error('a container requires an internal system parent')
+  return parent
+}
+
+/** Declare known architecture independently of scanner evidence; proposed software still uses draft. */
 export function addThing(repositoryRoot: string, input: AddInput & { thing: DeclaredThing | 'relation' | 'flow' }): Promise<string>
 export function addThing(repositoryRoot: string, input: AddInput): Promise<string | StructuralResult>
 export async function addThing(repositoryRoot: string, input: AddInput): Promise<string | StructuralResult> {
@@ -77,16 +92,19 @@ export async function addThing(repositoryRoot: string, input: AddInput): Promise
   const name = requireText(input.name, 'name')
   const thing = requireThing(input.thing, name)
   const overview = requireText(input.overview, '--overview')
-  if (input.technology !== undefined && thing !== 'external') {
-    throw new Error('--technology is only valid for an external')
+  if (input.technology !== undefined && thing !== 'external' && thing !== 'container') {
+    throw new Error('--technology is only valid for an external or container')
   }
   const filesystem = GromaFileSystem.open(repositoryRoot)
   const records = await loadArchitecture(repositoryRoot)
-  const id = freeId(records, buildArchitectureModel(records.documents), name)
+  const model = buildArchitectureModel(records.documents)
+  const parent = declaredParent(thing, input, model.elements)
+  const id = freeId(records, model, name)
   const root = filesystem.sourceFilename()
   const destination = thing === 'draft'
     ? draftRecordPath(root, id)
-    : architectureElementPath({ root, kind: thing === 'actor' ? 'actor' : 'system', id, external: thing === 'external' })
+    : architectureElementPath({ root, kind: thing === 'actor' ? 'actor' : thing === 'container' ? 'container' : 'system',
+      id, external: thing === 'external', parentSourceFilename: parent?.sourceFilename })
   if (filesystem.exists(filesystem.relative(destination))) {
     throw new Error(`architecture document already exists at ${destination}`)
   }
